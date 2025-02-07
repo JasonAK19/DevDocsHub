@@ -1,8 +1,10 @@
 'use client';
 import React from 'react';
 import { Search, Code, Bookmark } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 const SearchInterface = () => {
+  const router = useRouter();
   const technologies = ['React', 'Python', 'Node.js', 'TypeScript'];
   const recentSearches = [
     {
@@ -16,6 +18,15 @@ const SearchInterface = () => {
       lastVisited: '5 hours ago'
     }
   ];
+  
+  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const query = formData.get('search') as string;
+    if (query.trim()) {
+      router.push(`/search?q=${encodeURIComponent(query)}`);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white">
@@ -43,16 +54,19 @@ const SearchInterface = () => {
           </p>
 
           {/* Search Bar */}
-          <div className="mb-8">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search documentation (e.g. React hooks, Python decorators)"
-                className="w-full rounded-lg border border-gray-300 px-4 py-3 pl-10 focus:border-blue-500 focus:outline-none"
-              />
-              <Search className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
+          <form onSubmit={handleSearch}>
+            <div className="mb-8">
+              <div className="relative">
+                <input
+                  name="search"
+                  type="text"
+                  placeholder="Search documentation (e.g. React hooks, Python decorators)"
+                  className="w-full rounded-lg border border-gray-300 px-4 py-3 pl-10 focus:border-blue-500 focus:outline-none"
+                />
+                <Search className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
+              </div>
             </div>
-          </div>
+          </form>
 
           {/* Technology Pills */}
           <div className="mb-16 flex justify-center space-x-4">
