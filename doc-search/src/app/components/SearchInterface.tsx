@@ -1,3 +1,4 @@
+'use client';
 import React from 'react';
 import { Search, Code, Bookmark } from 'lucide-react';
 
@@ -27,8 +28,8 @@ const SearchInterface = () => {
           </div>
           <div className="flex items-center space-x-6">
             <a href="#" className="text-gray-600 hover:text-gray-900">Documentation</a>
-            <a href="#" className="text-gray-600 hover:text-gray-900">Snippets</a>
-            <a href="#" className="text-gray-600 hover:text-gray-900">Bookmarks</a>
+            <a href="/snippets" className="text-gray-600 hover:text-gray-900">Snippets</a>
+            <a href="/bookmarks" className="text-gray-600 hover:text-gray-900">Bookmarks</a>
           </div>
         </div>
       </nav>
