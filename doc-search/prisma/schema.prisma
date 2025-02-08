@@ -1,0 +1,138 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+model User {
+  id            String         @id @default(cuid())
+  email         String         @unique
+  name          String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  bookmarks     Bookmark[]
+  searches      Search[]
+  codeSnippets  CodeSnippet[]
+  notes         Note[]
+}
+
+model DocumentationSource {
+  id          String      @id @default(cuid())
+  name        String      // e.g., "React Docs", "MDN"
+  baseUrl     String      // Base URL of the documentation
+  apiEndpoint String?     // If the source has an API
+  type        SourceType  // Official/Community/Other
+  language    String?     // Programming language if applicable
+  framework   String?     // Framework if applicable
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  pages       DocPage[]
+  enabled     Boolean     @default(true)
+
+  @@index([name])
+}
+
+model DocPage {
+  id          String             @id @default(cuid())
+  url         String
+  title       String
+  content     String             @db.Text
+  sourceId    String
+  source      DocumentationSource @relation(fields: [sourceId], references: [id])
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  bookmarks   Bookmark[]
+  snippets    CodeSnippet[]
+  searchIndex SearchIndex?
+
+  @@index([url])
+  @@index([title])
+}
+
+model SearchIndex {
+  id        String   @id @default(cuid())
+  pageId    String   @unique
+  page      DocPage  @relation(fields: [pageId], references: [id])
+  keywords  String[] // Array of keywords for better search
+  content   String   @db.Text // Processed content for search
+  metadata  Json     // Additional metadata for search
+  updatedAt DateTime @updatedAt
+
+  @@index([keywords])
+}
+
+model Search {
+  id        String   @id @default(cuid())
+  query     String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  timestamp DateTime @default(now())
+  results   Json     // Store search results for history
+
+  @@index([userId])
+  @@index([query])
+}
+
+model Bookmark {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  pageId    String
+  page      DocPage  @relation(fields: [pageId], references: [id])
+  folder    String?  // Optional folder organization
+  createdAt DateTime @default(now())
+  notes     Note[]
+
+  @@unique([userId, pageId])
+  @@index([userId])
+  @@index([pageId])
+}
+
+model CodeSnippet {
+  id          String   @id @default(cuid())
+  title       String
+  code        String   @db.Text
+  language    String
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  pageId      String?
+  page        DocPage? @relation(fields: [pageId], references: [id])
+  description String?
+  tags        String[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@index([language])
+  @@index([tags])
+}
+
+model Note {
+  id         String   @id @default(cuid())
+  content    String   @db.Text
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  bookmarkId String
+  bookmark   Bookmark @relation(fields: [bookmarkId], references: [id])
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([userId])
+  @@index([bookmarkId])
+}
+
+enum SourceType {
+  OFFICIAL
+  COMMUNITY
+  OTHER
+}
