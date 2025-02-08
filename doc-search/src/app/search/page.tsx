@@ -1,17 +1,29 @@
 import SearchResults from "@/app/components/SearchResults";
-import SearchSkeleton from "@/app/components/loading/SearchSkeleton";
-import { mockSearchResults } from "@/app/data/mockresults";
+import SearchSkeleton from "../components/loading/SearchSkeleton";
+import { mockSearchResults } from "../data/mockresults";
 import { Suspense } from "react";
 
-export default function SearchResultsPage({
-  searchParams
-}: {
-  searchParams: { q: string }
-}) {
+interface SearchPageProps {
+  searchParams: Promise<{
+    q?: string;
+  }>
+}
+
+export default async function SearchResultsPage({
+  searchParams,
+}: SearchPageProps) {
+  const params = await searchParams;
+  
+  if (!params.q) {
+    return <div>Please enter a search query</div>;
+  }
+
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+
   return (
     <Suspense fallback={<SearchSkeleton />}>
       <SearchResults 
-        query={searchParams.q} 
+        query={params.q} 
         results={mockSearchResults}
       />
     </Suspense>
