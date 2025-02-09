@@ -1,12 +1,48 @@
 "use client";
 import React, { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [formData, setFormData] = useState({ email: '', password: '' });
+  const [message, setMessage] = useState('');
+  const router = useRouter();
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    try {
+      const response = await fetch('http://localhost:3001/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setMessage('Login successful!');
+        router.push('/search/interface'); 
+      } else {
+        const errorData = await response.json();
+        setMessage(`Error: ${errorData.error}`);
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        setMessage(`Error: ${error.message}`);
+      } else {
+        setMessage('An unknown error occurred.');
+      }
+    }
+  };
   
   return (
-    <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+    <form className="space-y-6" onSubmit={handleSubmit}>
       <div>
         <label htmlFor="email" className="block text-sm font-medium text-gray-700">
           Email address
@@ -18,6 +54,8 @@ const LoginForm = () => {
             type="email"
             autoComplete="email"
             required
+            value={formData.email}
+            onChange={handleChange}
             className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
           />
         </div>
@@ -34,6 +72,8 @@ const LoginForm = () => {
             type={showPassword ? 'text' : 'password'}
             autoComplete="current-password"
             required
+            value={formData.password}
+            onChange={handleChange}
             className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
           />
           <button
