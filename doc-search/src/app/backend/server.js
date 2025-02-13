@@ -18,7 +18,9 @@ app.use(cors({
 ));
 
 app.use(express.json());
-
+app.use('/api/users', userRoutes);
+app.use('/search', searchRoutes);
+  
 app.use((req, res, next) => {
     res.setHeader(
       'Content-Security-Policy',
@@ -27,9 +29,7 @@ app.use((req, res, next) => {
     next();
   });
 
-app.use('/user', userRoutes);
-app.use('/search', searchRoutes);
-  
+
 app.get('/', async (req, res) => {
   const users = await prisma.user.findMany();
   res.json(users);

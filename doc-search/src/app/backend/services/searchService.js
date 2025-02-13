@@ -86,7 +86,7 @@ async function searchDocuments(query, language, framework) {
     const total = searchResponse.hits.total.value;
     const results = searchResponse.hits.hits.map(hit => ({
       id: hit._id,
-      score: Number(hit._score.toFixed(2)),
+      score: hit._score !== null ? hit._score.toFixed(2) : 0,
       title: hit._source.title || '',
       content: hit._source.content || '',
       language: hit._source.language,
@@ -110,7 +110,7 @@ async function searchDocuments(query, language, framework) {
         language,
         framework,
         took: searchResponse.took || 0,
-        max_score: Number(searchResponse.hits.max_score.toFixed(2)),
+        max_score: searchResponse.hits.max_score !== null ? searchResponse.hits.max_score.toFixed(2) : 0,
         query_terms: query.split(/\s+/).length
       }
     };

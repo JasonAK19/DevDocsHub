@@ -2,9 +2,12 @@
 import React from 'react';
 import { Search, Code, Bookmark } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+
 
 const SearchInterface = () => {
   const router = useRouter();
+  const [selectedTech, setSelectedTech] = useState<string>('React');
   const technologies = ['React', 'Python', 'Node.js', 'TypeScript'];
   const recentSearches = [
     {
@@ -24,7 +27,9 @@ const SearchInterface = () => {
     const formData = new FormData(e.currentTarget);
     const query = formData.get('search') as string;
     if (query.trim()) {
-      router.push(`/search?q=${encodeURIComponent(query)}`);
+      // Redirect to search results page with query and selected technology
+      const language = selectedTech === 'TypeScript' ? 'JavaScript' : selectedTech;
+      router.push(`/search?q=${encodeURIComponent(query)}&language=${selectedTech}`);
     }
   };
 
@@ -71,13 +76,18 @@ const SearchInterface = () => {
           {/* Technology Pills */}
           <div className="mb-16 flex justify-center space-x-4">
             {technologies.map((tech) => (
-              <button
-                key={tech}
-                className="rounded-full bg-gray-100 px-4 py-1 text-sm text-gray-700 hover:bg-gray-200"
-              >
-                {tech}
-              </button>
-            ))}
+          <button
+            key={tech}
+            onClick={() => setSelectedTech(tech)}
+            className={`rounded-full px-4 py-1 text-sm ${
+              selectedTech === tech 
+                ? 'bg-blue-500 text-white' 
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            {tech}
+          </button>
+        ))}
           </div>
 
           {/* Features Grid */}
