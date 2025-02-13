@@ -33,9 +33,11 @@ async function searchDocuments(query, language, framework) {
             must: {
               multi_match: {
                 query,
-                fields: ['title^2', 'content'],
+                fields: ['title^3', 'content^2', 'framework'],
                 fuzziness: 'AUTO',
-                minimum_should_match: '70%'  // More lenient matching
+                minimum_should_match: '70%',
+                type: 'best_fields',
+                tie_breaker: 0.3
               }
             },
             filter: [
@@ -45,43 +47,72 @@ async function searchDocuments(query, language, framework) {
           }
         },
         highlight: {
+          pre_tags: ['<mark>'],
+          post_tags: ['</mark>'],
           fields: {
-            title: {},
+            title: {
+              number_of_fragments: 0,
+              type: 'unified'
+            },
             content: {
               fragment_size: 150,
-              number_of_fragments: 3
+              number_of_fragments: 3,
+              type: 'unified',
+              fragmenter: 'span'
             }
           }
         },
-        _source: ['title', 'content', 'language', 'framework'],
-        size: 10  // Limit results to 10
+        _source: ['title', 'content', 'language', 'framework', 'url'],
+        size: 10,
+        sort: [{ '_score': 'desc' }],
+        track_scores: true,
+        track_total_hits: true
       }
     });
 
     if (!searchResponse.hits) {
-      console.log('No hits found in response');
       return {
         total: 0,
-        results: []
+        results: [],
+        metadata: {
+          query,
+          language,
+          framework,
+          took: searchResponse.took || 0
+        }
       };
     }
 
     const total = searchResponse.hits.total.value;
-    console.log(`Found ${total} matches`);
-
     const results = searchResponse.hits.hits.map(hit => ({
       id: hit._id,
-      score: hit._score,
+      score: Number(hit._score.toFixed(2)),
       title: hit._source.title || '',
       content: hit._source.content || '',
       language: hit._source.language,
       framework: hit._source.framework,
-      highlights: hit.highlight || {}
+      url: hit._source.url || '',
+      highlights: {
+        title: hit.highlight?.title?.[0] || hit._source.title,
+        content: hit.highlight?.content || [],
+        relevance: {
+          title: hit.highlight?.title ? 'high' : 'none',
+          content: hit.highlight?.content?.length || 0
+        }
+      }
     }));
 
     return {
       total,
-      results
+      results,
+      metadata: {
+        query,
+        language,
+        framework,
+        took: searchResponse.took || 0,
+        max_score: Number(searchResponse.hits.max_score.toFixed(2)),
+        query_terms: query.split(/\s+/).length
+      }
     };
   } catch (error) {
     console.error('Search error:', error);
