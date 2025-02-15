@@ -34,7 +34,7 @@ export interface SearchResponse {
   ): Promise<SearchResponse> {
     const normalizedLanguage = language.replace('.js', '').replace('Node', 'JavaScript');
   
-    const response = await fetch('http://localhost:3001/search/search', {
+    const response = await fetch('/api/search', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

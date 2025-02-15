@@ -1,22 +1,119 @@
 const esClient = require('../utils/elasticsearchClient');
+const axios = require('axios');
+require('dotenv').config();
+
+
+const API_CONFIG = {
+  github: {
+    baseUrl: 'https://api.github.com',
+    version: 'application/vnd.github.v3+json',
+    token: process.env.GITHUB_API_KEY
+  },
+  mdn: {
+    baseUrl: 'https://developer.mozilla.org/api/v1',
+    version: '1'
+  },
+  readthedocs: {
+    baseUrl: 'https://readthedocs.org/api/v3',
+    version: '3'
+  }
+};
+
+// GitHub Docs API
+async function fetchGitHubDocs(query, options = {}) {
+  const { owner = 'microsoft', repo = 'TypeScript' } = options;
+  
+  try {
+    const searchResponse = await axios.get(`${API_CONFIG.github.baseUrl}/search/code`, {
+      params: {
+        q: `${query} repo:${owner}/${repo}`,
+        per_page: 10
+      },
+      headers: {
+        'Accept': API_CONFIG.github.version,
+        'Authorization': `Bearer ${API_CONFIG.github.token}`
+      }
+    });
+
+    return searchResponse.data.items.map(item => ({
+      title: item.name,
+      summary: item.path,
+      url: item.html_url,
+      score: item.score,
+      repository: `${owner}/${repo}`
+    }));
+
+  } catch (error) {
+    console.error('GitHub API error:', error.message);
+    return [];
+  }
+}
+
+// MDN Web Docs API
+async function fetchMDNDocs(query) {
+  try {
+    const response = await axios.get(`${API_CONFIG.mdn.baseUrl}/search`, {
+      params: {
+        q: query,
+        locale: 'en-US',
+        highlight: true
+      }
+    });
+    
+    return response.data.documents.map(doc => ({
+      title: doc.title,
+      summary: doc.summary,
+      url: `https://developer.mozilla.org${doc.mdn_url}`,
+      score: doc.score
+    }));
+  } catch (error) {
+    console.error('MDN API error:', error.message);
+    return [];
+  }
+}
+
+async function fetchReadTheDocs(query) {
+  try {
+    const response = await axios.get(`${API_CONFIG.readthedocs.baseUrl}/search/`, {
+      params: {
+        q: query,
+        page_size: 10
+      },
+      headers: {
+        'Accept': 'application/json'
+      }
+    });
+    
+    return response.data.results.map(result => ({
+      title: result.title,
+      project: result.project,
+      url: result.link,
+      excerpt: result.excerpt
+    }));
+  } catch (error) {
+    console.error('ReadTheDocs API error:', error.message);
+    return [];
+  }
+}
 
 async function checkElasticsearchStatus() {
   try {
     const health = await esClient.cluster.health();
-    console.log('Elasticsearch cluster health:', health);
     return {
       isRunning: true,
-      status: health.status
+      status: health.status,
+      numberOfNodes: health.number_of_nodes,
+      activeShards: health.active_shards
     };
   } catch (error) {
     console.error('Elasticsearch health check failed:', error);
     return {
       isRunning: false,
+      status: 'red',
       error: error.message
     };
   }
 }
-
 
 async function searchDocuments(query, language, framework) {
   try {
@@ -25,100 +122,87 @@ async function searchDocuments(query, language, framework) {
       throw new Error('Elasticsearch is not available');
     }
 
-    const searchResponse = await esClient.search({
-      index: 'documentation',
-      body: {
-        query: {
-          bool: {
-            must: {
-              multi_match: {
-                query,
-                fields: ['title^3', 'content^2', 'framework'],
-                fuzziness: 'AUTO',
-                minimum_should_match: '70%',
-                type: 'best_fields',
-                tie_breaker: 0.3
-              }
-            },
-            filter: [
-              { term: { language } },
-              { term: { framework } }
-            ]
-          }
-        },
-        highlight: {
-          pre_tags: ['<mark>'],
-          post_tags: ['</mark>'],
-          fields: {
-            title: {
-              number_of_fragments: 0,
-              type: 'unified'
-            },
-            content: {
-              fragment_size: 150,
-              number_of_fragments: 3,
-              type: 'unified',
-              fragmenter: 'span'
-            }
-          }
-        },
-        _source: ['title', 'content', 'language', 'framework', 'url'],
-        size: 10,
-        sort: [{ '_score': 'desc' }],
-        track_scores: true,
-        track_total_hits: true
-      }
-    });
+    const [githubDocs, mdnDocs, readtheDocs] = await Promise.all([
+      fetchGitHubDocs(query),
+      fetchMDNDocs(query),
+      fetchReadTheDocs(query)
+    ]);
 
-    if (!searchResponse.hits) {
-      return {
-        total: 0,
-        results: [],
-        metadata: {
-          query,
-          language,
-          framework,
-          took: searchResponse.took || 0
-        }
-      };
-    }
+    const combinedResults = {
+      github: githubDocs,
+      mdn: mdnDocs,
+      readthedocs: readtheDocs
+    };
 
-    const total = searchResponse.hits.total.value;
-    const results = searchResponse.hits.hits.map(hit => ({
-      id: hit._id,
-      score: hit._score !== null ? hit._score.toFixed(2) : 0,
-      title: hit._source.title || '',
-      content: hit._source.content || '',
-      language: hit._source.language,
-      framework: hit._source.framework,
-      url: hit._source.url || '',
-      highlights: {
-        title: hit.highlight?.title?.[0] || hit._source.title,
-        content: hit.highlight?.content || [],
-        relevance: {
-          title: hit.highlight?.title ? 'high' : 'none',
-          content: hit.highlight?.content?.length || 0
-        }
-      }
-    }));
+    await indexExternalResults(combinedResults);
 
     return {
-      total,
-      results,
+      total: Object.values(combinedResults).flat().length,
+      results: formatSearchResults(combinedResults),
       metadata: {
         query,
         language,
         framework,
-        took: searchResponse.took || 0,
-        max_score: searchResponse.hits.max_score !== null ? searchResponse.hits.max_score.toFixed(2) : 0,
-        query_terms: query.split(/\s+/).length
+        sources: {
+          github: !!githubDocs,
+          mdn: mdnDocs.length > 0,
+          readthedocs: readtheDocs.length > 0
+        }
       }
     };
+
   } catch (error) {
     console.error('Search error:', error);
     throw new Error(`Search failed: ${error.message}`);
   }
 }
+
+
+function formatSearchResults(combinedResults) {
+  return Object.entries(combinedResults)
+    .flatMap(([source, results]) => {
+      if (!results || results.length === 0) return [];
+      
+      return Array.isArray(results) ? results.map(result => ({
+        ...result,
+        source
+      })) : [{
+        ...results,
+        source
+      }];
+    })
+    .sort((a, b) => (b.score || 0) - (a.score || 0));
+}
+
+async function indexExternalResults(results) {
+  try {
+    const bulkBody = Object.entries(results).flatMap(([source, docs]) => {
+      if (!docs) return [];
+      const documents = Array.isArray(docs) ? docs : [docs];
+      
+      return documents.flatMap(doc => [
+        { index: { _index: 'external_docs' } },
+        {
+          ...doc,
+          source,
+          timestamp: new Date(),
+          type: 'external'
+        }
+      ]);
+    });
+
+    if (bulkBody.length > 0) {
+      await esClient.bulk({ body: bulkBody });
+    }
+  } catch (error) {
+    console.error('Error indexing external results:', error);
+  }
+}
+
+
+
+
+
 
 module.exports = {
   checkElasticsearchStatus,
