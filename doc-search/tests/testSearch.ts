@@ -58,6 +58,27 @@ async function runTests() {
     owner: 'facebook',
     repo: 'react'
   });
+
+
+  console.log('\n=== Testing Python Django Documentation ===');
+  await testSearch({
+    query: 'models',
+    language: 'Python',
+    framework: 'django',
+    source: 'readthedocs',
+    project: 'django'
+  });
+
+  console.log('\n=== Testing FastAPI Documentation ===');
+  await testSearch({
+    query: 'dependency injection',
+    language: 'Python',
+    framework: 'fastAPI',
+    source: 'readthedocs',
+    project: 'fastapi'
+  });
 }
+
+
 
 runTests();

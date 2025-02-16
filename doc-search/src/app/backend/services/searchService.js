@@ -15,7 +15,8 @@ const API_CONFIG = {
   },
   readthedocs: {
     baseUrl: 'https://readthedocs.org/api/v3',
-    version: '3'
+    version: '3',
+    token: process.env.READTHEDOCS_TOKEN
   }
 };
 
@@ -72,26 +73,45 @@ async function fetchMDNDocs(query) {
   }
 }
 
-async function fetchReadTheDocs(query) {
+async function fetchReadTheDocs(query, options = {}) {
+  const { project = 'django' } = options;
+  
   try {
-    const response = await axios.get(`${API_CONFIG.readthedocs.baseUrl}/search/`, {
+    const searchResponse = await axios.get(`${API_CONFIG.readthedocs.baseUrl}/search/`, {
       params: {
         q: query,
-        page_size: 10
+        project: project,
+        version: 'latest',
+        //type: 'file'
       },
       headers: {
+        'Authorization': `Token ${API_CONFIG.readthedocs.token}`,
         'Accept': 'application/json'
       }
     });
-    
-    return response.data.results.map(result => ({
-      title: result.title,
-      project: result.project,
-      url: result.link,
-      excerpt: result.excerpt
+
+    if (!searchResponse.data.results) {
+      console.warn('No results found in ReadTheDocs response');
+      return [];
+    }
+
+    return searchResponse.data.results.map(item => ({
+      title: item.title || item.project,
+      summary: item.highlight?.content || item.description || '',
+      url: item.absolute_url || item.link,
+      score: 1,
+      source: 'readthedocs',
+      project: project
     }));
+
   } catch (error) {
-    console.error('ReadTheDocs API error:', error.message);
+    console.error('ReadTheDocs API error:', {
+      message: error.message,
+      status: error.response?.status,
+      data: error.response?.data,
+      project: project,
+      query: query
+    });
     return [];
   }
 }
@@ -125,7 +145,8 @@ async function searchDocuments(query, language, framework) {
     const [githubDocs, mdnDocs, readtheDocs] = await Promise.all([
       fetchGitHubDocs(query),
       fetchMDNDocs(query),
-      fetchReadTheDocs(query)
+      fetchReadTheDocs(query, { project: framework.toLowerCase() })
+
     ]);
 
     const combinedResults = {
