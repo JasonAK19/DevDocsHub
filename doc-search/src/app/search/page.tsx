@@ -1,54 +1,84 @@
 import SearchResults from "@/app/components/SearchResults";
 import SearchSkeleton from "../components/loading/SearchSkeleton";
-import { searchDocumentation } from "./searchService";
+import ServerError from "../components/ServerError";
 import { Suspense } from "react";
+import { ErrorBoundary } from "../components/ErrorBoundary";
+import { performSearch, refreshSearch } from "../actions/searchActions";
+import { SearchParams, SearchResponse, SearchResult, FormattedSearchResult } from "../types/search";
 
 interface SearchPageProps {
-  searchParams: Promise<{
-    q?: string;
-    language?: string;
-    framework?: string;
-  }>
+  searchParams: { [key: string]: string | string[] | undefined }
 }
 
 export default async function SearchResultsPage({
   searchParams,
 }: SearchPageProps) {
-  const params = await searchParams;
-  
-  if (!params.q) {
-    return <div>Please enter a search query</div>;
-  }
-
   try {
-    const searchResponse = await searchDocumentation(
-      params.q,
-      params.language || 'JavaScript'
-    );
-  
-    const formattedResults = searchResponse.results.map(result => ({
-      title: result.highlights.title || result.title,
-      description: result.highlights.content[0] || result.content,
-      url: result.url,
-      source: result.framework,
-      language: result.language,
+    // Wait for searchParams to be ready
+    const params = await Promise.resolve(searchParams);
+    const query = params?.q?.toString() || '';
+    const language = params?.language?.toString() || 'JavaScript';
+
+    // Check for query parameter
+    if (!query.trim()) {
+      return (
+        <div className="p-4 text-gray-600">
+          <h2 className="text-xl font-semibold mb-2">No Search Query</h2>
+          <p>Please enter a search query to get started</p>
+        </div>
+      );
+    }
+
+    // Perform search
+    const searchResponse = await performSearch(query, language);
+
+    // Validate response structure
+    if (!searchResponse) {
+      throw new Error('No response received from search API');
+    }
+
+    // Extract results, handling both response formats
+    let results: SearchResult[] = [];
+    if (searchResponse.results && Array.isArray(searchResponse.results)) {
+      results = searchResponse.results;
+    } else if (Array.isArray(searchResponse)) {
+      results = searchResponse;
+    } else {
+      throw new Error('Invalid search results format');
+    }
+
+    // Format results
+    const formattedResults: FormattedSearchResult[] = results.map((result: SearchResult) => ({
+      title: result.title || 'Untitled',
+      description: result.summary || result.content || '',
+      url: result.url || '#',
+      source: result.source || 'Unknown',
+      language: language,
       lastUpdated: new Date().toLocaleDateString()
     }));
 
+    // Return search results component
+    return (
+      <ErrorBoundary>
+        <Suspense fallback={<SearchSkeleton />}>
+          <SearchResults 
+            query={query}
+            results={formattedResults}
+            metadata={searchResponse.metadata}
+          />
+        </Suspense>
+      </ErrorBoundary>
+    );
 
-  return (
-    <Suspense fallback={<SearchSkeleton />}>
-      <SearchResults 
-        query={params.q} 
-        results={formattedResults}
+  } catch (error) {
+    console.error('Error fetching search results:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+
+    return (
+      <ServerError 
+        error={errorMessage}
+        reset={refreshSearch}
       />
-    </Suspense>
-  );
-}catch (error) {
-  return (
-    <div className="p-4 text-red-500">
-      Error performing search: {(error as Error).message}
-    </div>
-  );
-}
+    );
+  }
 }

@@ -22,6 +22,7 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/**/*.ts",
+    "src/**/*.tsx", "**/*.test.ts", "**/*.test.tsx","**/*.spec.ts", "**/*.spec.tsx", "src/app/backend/services/searchService.test.js"],
   "exclude": ["node_modules"]
 }

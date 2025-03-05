@@ -12,11 +12,6 @@ const API_CONFIG = {
   mdn: {
     baseUrl: 'https://developer.mozilla.org/api/v1',
     version: '1'
-  },
-  readthedocs: {
-    baseUrl: 'https://readthedocs.org/api/v3',
-    version: '3',
-    token: process.env.READTHEDOCS_TOKEN
   }
 };
 
@@ -73,48 +68,6 @@ async function fetchMDNDocs(query) {
   }
 }
 
-async function fetchReadTheDocs(query, options = {}) {
-  const { project = 'django' } = options;
-  
-  try {
-    const searchResponse = await axios.get(`${API_CONFIG.readthedocs.baseUrl}/search/`, {
-      params: {
-        q: query,
-        project: project,
-        version: 'latest',
-        //type: 'file'
-      },
-      headers: {
-        'Authorization': `Token ${API_CONFIG.readthedocs.token}`,
-        'Accept': 'application/json'
-      }
-    });
-
-    if (!searchResponse.data.results) {
-      console.warn('No results found in ReadTheDocs response');
-      return [];
-    }
-
-    return searchResponse.data.results.map(item => ({
-      title: item.title || item.project,
-      summary: item.highlight?.content || item.description || '',
-      url: item.absolute_url || item.link,
-      score: 1,
-      source: 'readthedocs',
-      project: project
-    }));
-
-  } catch (error) {
-    console.error('ReadTheDocs API error:', {
-      message: error.message,
-      status: error.response?.status,
-      data: error.response?.data,
-      project: project,
-      query: query
-    });
-    return [];
-  }
-}
 
 async function checkElasticsearchStatus() {
   try {
@@ -135,51 +88,77 @@ async function checkElasticsearchStatus() {
   }
 }
 
-async function searchDocuments(query, language, framework) {
+
+async function searchDocuments(query, language = 'JavaScript', framework = null) {
   try {
-    const health = await checkElasticsearchStatus();
-    if (!health.isRunning) {
-      throw new Error('Elasticsearch is not available');
+    // Try to check Elasticsearch but don't block the entire search if it fails
+    let elasticsearchAvailable = false;
+    try {
+      const health = await checkElasticsearchStatus();
+      elasticsearchAvailable = health.isRunning;
+    } catch (error) {
+      console.warn('Elasticsearch check failed:', error.message);
     }
 
-    const [githubDocs, mdnDocs, readtheDocs] = await Promise.all([
+    // Fetch results from external APIs regardless of Elasticsearch status
+    const [githubDocs, mdnDocs] = await Promise.all([
       fetchGitHubDocs(query),
       fetchMDNDocs(query),
-      fetchReadTheDocs(query, { project: framework.toLowerCase() })
-
     ]);
 
     const combinedResults = {
       github: githubDocs,
       mdn: mdnDocs,
-      readthedocs: readtheDocs
     };
 
-    await indexExternalResults(combinedResults);
+    // Only try to index if Elasticsearch is available
+    if (elasticsearchAvailable) {
+      try {
+        await indexExternalResults(combinedResults);
+      } catch (error) {
+        console.error('Failed to index results:', error);
+        // Continue without indexing
+      }
+    }
 
     return {
       total: Object.values(combinedResults).flat().length,
-      results: formatSearchResults(combinedResults),
+      results: await formatSearchResults(combinedResults),
       metadata: {
         query,
         language,
         framework,
         sources: {
-          github: !!githubDocs,
-          mdn: mdnDocs.length > 0,
-          readthedocs: readtheDocs.length > 0
+          elasticsearch: elasticsearchAvailable,
+          github: Array.isArray(githubDocs) && githubDocs.length > 0,
+          mdn: Array.isArray(mdnDocs) && mdnDocs.length > 0
         }
       }
     };
 
   } catch (error) {
     console.error('Search error:', error);
-    throw new Error(`Search failed: ${error.message}`);
+    // Return partial results if available instead of throwing
+    return {
+      total: 0,
+      results: [],
+      metadata: {
+        query,
+        language,
+        framework,
+        error: error.message,
+        sources: {
+          elasticsearch: false,
+          github: false,
+          mdn: false
+        }
+      }
+    };
   }
 }
 
 
-function formatSearchResults(combinedResults) {
+async function formatSearchResults(combinedResults) {
   return Object.entries(combinedResults)
     .flatMap(([source, results]) => {
       if (!results || results.length === 0) return [];

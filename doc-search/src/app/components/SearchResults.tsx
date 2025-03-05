@@ -2,6 +2,15 @@
 import { SearchResult } from '../types/search';
 import { ExternalLink } from 'lucide-react';
 
+interface SearchResult {
+  title: string;
+  description: string;
+  url: string;
+  source: string;
+  language: string;
+  lastUpdated: string;
+}
+
 interface SearchResultsProps {
   query: string;
   results: SearchResult[];

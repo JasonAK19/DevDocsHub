@@ -1,0 +1,25 @@
+{
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+      "jsx": "react-jsx",
+      "esModuleInterop": true,
+      "module": "CommonJS",
+      "types": ["jest", "node"],
+      "strict": true,
+      "isolatedModules": true,
+      "moduleResolution": "node",
+      "noEmit": true,
+      "paths": {
+        "@/*": ["./src/*"]
+      }
+    },
+    "include": [
+        "src/**/*.ts",
+        "src/**/*.tsx",
+        "**/*.test.ts",
+        "**/*.test.tsx",
+        "**/*.spec.ts",
+        "**/*.spec.tsx"
+    ],
+    "exclude": ["node_modules"]
+  }
