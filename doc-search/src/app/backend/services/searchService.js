@@ -157,6 +157,11 @@ async function searchDocuments(query, language = 'JavaScript', framework = null)
   }
 }
 
+function generateResultId(result, source) {
+  return Buffer.from(`${source}-${result.url || result.title || JSON.stringify(result)}`).toString('base64');
+}
+
+
 
 async function formatSearchResults(combinedResults) {
   return Object.entries(combinedResults)
@@ -165,14 +170,18 @@ async function formatSearchResults(combinedResults) {
       
       return Array.isArray(results) ? results.map(result => ({
         ...result,
+        id: generateResultId(result, source),
         source
       })) : [{
         ...results,
+        id: generateResultId(results, source),
         source
       }];
     })
     .sort((a, b) => (b.score || 0) - (a.score || 0));
 }
+
+
 
 async function indexExternalResults(results) {
   try {

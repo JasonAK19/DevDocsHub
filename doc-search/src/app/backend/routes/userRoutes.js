@@ -39,9 +39,19 @@ router.post('/register', async (req, res) => {
     // Generate JWT token
     const token = jwt.sign(
       { userId: user.id },
-      process.env.JWT_SECRET || 'your-secret-key',
+      process.env.NEXTAUTH_SECRET || 'your-secret-key',
       { expiresIn: '24h' }
     );
+
+    // Set the auth cookie
+    res.cookie('auth_token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    });
+
+    // Log the user ID after setting the cookie
+    console.log("Set auth cookie for user:", user.id);
 
     res.status(201).json({
       user: {
@@ -79,9 +89,22 @@ router.post('/login', async (req, res) => {
 
     const token = jwt.sign(
       { userId: user.id },
-      process.env.JWT_SECRET || 'your-secret-key',
+      process.env.NEXTAUTH_SECRET || 'your-secret-key',
       { expiresIn: '24h' }
     );
+
+    // Set the auth cookie
+    res.cookie('auth_token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      domain: 'localhost' 
+    });
+
+    // Log the user ID after setting the cookie
+    console.log("Set auth cookie for user:", user.id);
 
     res.json({
       user: {
