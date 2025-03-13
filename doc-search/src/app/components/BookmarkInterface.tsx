@@ -107,12 +107,12 @@ export default function BookmarkInterface() {
     <div className="min-h-screen bg-white">
       <div className="mx-auto max-w-4xl px-6 py-8">
       <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-semibold flex items-center">
-            <Bookmark className="mr-2 h-6 w-6" /> Your Bookmarks
+          <h1 className="text-2xl font-semibold flex items-center text-gray-900">
+            <Bookmark className="mr-2 h-6 w-6 text-gray-900" /> Your Bookmarks
           </h1>
           <button 
             onClick={() => router.push('/search/interface')} 
-            className="flex items-center px-3 py-2 text-sm text-blue-600 hover:text-blue-800"
+            className="flex items-center px-3 py-2 text-sm text-gray-800 hover:text-gray-300"
           >
             <ArrowLeft className="h-4 w-4 mr-1" /> Back to Search
           </button>
@@ -120,7 +120,7 @@ export default function BookmarkInterface() {
 
         {loading ? (
           <div className="text-center p-4">
-            <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+            <div className="animate-spin h-8 w-8 border-4 border-gray-800 border-t-transparent rounded-full mx-auto mb-4"></div>
             <p>Loading bookmarks...</p>
           </div>
         ) : error ? (
@@ -148,7 +148,7 @@ export default function BookmarkInterface() {
                       href={bookmark.page?.url} 
                       target="_blank" 
                       rel="noopener noreferrer" 
-                      className="text-lg font-medium text-blue-600 hover:text-blue-800"
+                      className="text-lg font-medium text-gray-900 hover:text-gray-500"
                     >
                       {bookmark.page?.title || 'Untitled Page'}
                     </a>

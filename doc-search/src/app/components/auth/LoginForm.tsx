@@ -2,12 +2,14 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/app/context/AuthContext';
 
 const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [message, setMessage] = useState('');
   const router = useRouter();
+  const { enableGuestMode, setUser } = useAuth();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -28,7 +30,8 @@ const LoginForm = () => {
       if (response.ok) {
         const data = await response.json();
         setMessage('Login successful!');
-        router.push('/search/interface'); 
+        setUser(data.user); // Set the user state
+        router.push('/search/interface');
       } else {
         const errorData = await response.json();
         setMessage(`Error: ${errorData.error}`);
@@ -41,7 +44,12 @@ const LoginForm = () => {
       }
     }
   };
-  
+
+  const handleGuest = () => {
+    enableGuestMode();
+    router.push('/search/interface');
+  };
+
   return (
     <form className="space-y-6" onSubmit={handleSubmit}>
       <div>
@@ -105,7 +113,7 @@ const LoginForm = () => {
         </div>
 
         <div className="text-sm">
-          <a href="#" className="font-medium text-blue-600 hover:text-blue-500">
+          <a href="#" className="font-medium text-gray-600 hover:text-gray-500">
             Forgot your password?
           </a>
         </div>
@@ -114,9 +122,19 @@ const LoginForm = () => {
       <div>
         <button
           type="submit"
-          className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-800 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
         >
           Sign in
+        </button>
+      </div>
+
+      <div className="text-sm text-center mt-4">
+        <button
+          type="button"
+          onClick={handleGuest}
+          className="font-medium text-gray-600 hover:text-gray-500"
+        >
+          Continue as Guest
         </button>
       </div>
     </form>

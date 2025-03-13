@@ -220,12 +220,12 @@ export default function SearchResults({ query, results, userId: propUserId }: Se
     <div className="min-h-screen bg-white">
       <div className="mx-auto max-w-4xl px-6 py-8">
       <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold">
+          <h2 className="text-xl font-semibold text-gray-500">
             Results for "{query}"
           </h2>
           <button 
             onClick={() => router.push('/search/interface')} 
-            className="flex items-center px-3 py-2 text-sm text-blue-600 hover:text-blue-800"
+            className="flex items-center px-3 py-2 text-sm text-gray-800 hover:text-gray-300"
           >
             <ArrowLeft className="h-4 w-4 mr-1" /> Back to Search
           </button>
@@ -235,7 +235,7 @@ export default function SearchResults({ query, results, userId: propUserId }: Se
             <div key={index} className="border rounded-lg p-4 hover:border-blue-500">
               <div className="flex justify-between items-start">
                 <div>
-                  <a href={result.url} className="text-lg font-medium text-blue-600 hover:text-blue-800">
+                  <a href={result.url} className="text-lg font-medium text-gray-900 hover:text-gray-500">
                     {result.title}
                   </a>
                   <p className="text-sm text-gray-600 mt-1">{result.description}</p>

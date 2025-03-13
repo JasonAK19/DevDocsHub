@@ -17,13 +17,13 @@ export default function LandingPage() {
             <div className="mt-10 flex items-center justify-center gap-x-6">
               <Link 
                 href="/auth/register" 
-                className="rounded-md bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-blue-500"
+                className="rounded-md bg-gray-800 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-gray-500"
               >
                 Get Started
               </Link>
               <Link 
                 href="/auth/login" 
-                className="rounded-md px-6 py-3 text-sm font-semibold text-gray-900 hover:text-blue-600"
+                className="rounded-md px-6 py-3 text-sm font-semibold text-gray-900 hover:text-gray-600"
               >
                 Sign In <ArrowRight className="ml-2 h-4 w-4 inline" />
               </Link>
@@ -43,7 +43,7 @@ export default function LandingPage() {
           <div className="mx-auto mt-16 max-w-2xl sm:mt-20 lg:mt-24 lg:max-w-4xl">
             <div className="grid max-w-xl grid-cols-1 gap-x-8 gap-y-10 lg:max-w-none lg:grid-cols-3">
               <div className="relative pl-16">
-                <Search className="absolute left-0 top-0 h-10 w-10 text-blue-600" />
+                <Search className="absolute left-0 top-0 h-10 w-10 text-gray-800" />
                 <h3 className="text-lg font-semibold text-gray-900">
                   Unified Search
                 </h3>
@@ -52,7 +52,7 @@ export default function LandingPage() {
                 </p>
               </div>
               <div className="relative pl-16">
-                <Code className="absolute left-0 top-0 h-10 w-10 text-blue-600" />
+                <Code className="absolute left-0 top-0 h-10 w-10 text-gray-800" />
                 <h3 className="text-lg font-semibold text-gray-900">
                   Code Snippets
                 </h3>
@@ -61,7 +61,7 @@ export default function LandingPage() {
                 </p>
               </div>
               <div className="relative pl-16">
-                <Bookmark className="absolute left-0 top-0 h-10 w-10 text-blue-600" />
+                <Bookmark className="absolute left-0 top-0 h-10 w-10 text-gray-800" />
                 <h3 className="text-lg font-semibold text-gray-900">
                   Bookmarks
                 </h3>
@@ -75,7 +75,7 @@ export default function LandingPage() {
       </div>
 
       {/* CTA Section */}
-      <div className="bg-blue-600 py-16">
+      <div className="bg-gray-900 py-16">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
@@ -87,7 +87,7 @@ export default function LandingPage() {
             <div className="mt-10 flex items-center justify-center gap-x-6">
               <Link 
                 href="/auth/register" 
-                className="rounded-md bg-white px-6 py-3 text-sm font-semibold text-blue-600 shadow-sm hover:bg-blue-50"
+                className="rounded-md bg-white px-6 py-3 text-sm font-semibold text-gray-900 shadow-sm hover:bg-blue-50"
               >
                 Create an account
               </Link>
