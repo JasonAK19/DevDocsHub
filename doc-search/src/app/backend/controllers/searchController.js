@@ -27,7 +27,7 @@ async function search(req, res) {
             ...results.metadata,
             sources: {
               ...results.metadata.sources,
-              elasticsearch: false // Explicitly mark Elasticsearch as unavailable
+              elasticsearch: false 
             }
           }
         }
@@ -36,7 +36,7 @@ async function search(req, res) {
 
     // Handle case where we have no results
     if (results.metadata?.error) {
-      // Log the Elasticsearch error but don't expose it to the client
+      // Log the Elasticsearch error 
       console.warn('Search backend warning:', results.metadata.error);
       return res.json({
         success: true,

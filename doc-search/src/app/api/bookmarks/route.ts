@@ -77,7 +77,6 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'User not found' }, { status: 404 });
       }
       
-      // First try to find an existing DocPage with the same URL
       let page = null;
       
       if (url) {
@@ -88,7 +87,6 @@ export async function POST(request: NextRequest) {
       
       // If page doesn't exist, create it
       if (!page) {
-        // Get or create a default source
         let source = await prisma.documentationSource.findFirst({
           where: { name: 'External' }
         });
@@ -118,7 +116,7 @@ export async function POST(request: NextRequest) {
       const existingBookmark = await prisma.bookmark.findFirst({
         where: {
           userId: userId,
-          pageId: page.id // Use the page ID from our database
+          pageId: page.id 
         }
       });
       

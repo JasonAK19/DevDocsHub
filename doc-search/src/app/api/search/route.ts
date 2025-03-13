@@ -1,10 +1,8 @@
 import { searchDocuments } from '../../backend/services/searchService';
 import { NextResponse } from 'next/server';
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
-const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:3001';
-
-// Common error response helper
 function createErrorResponse(message: string, status: number = 500) {
   return NextResponse.json(
     { error: message },
@@ -12,7 +10,6 @@ function createErrorResponse(message: string, status: number = 500) {
   );
 }
 
-// Common success response helper
 function createSuccessResponse(data: any) {
   return NextResponse.json({
     success: true,

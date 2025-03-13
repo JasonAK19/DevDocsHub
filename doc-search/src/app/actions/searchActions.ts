@@ -33,12 +33,10 @@ export async function performSearch(query: string, language?: string) {
 
     const data = await response.json();
     
-    // Handle the success response format from your API
     if (data.success && data.data) {
       return data.data;
     }
 
-    // Handle error response
     if (data.error) {
       throw new Error(data.error);
     }

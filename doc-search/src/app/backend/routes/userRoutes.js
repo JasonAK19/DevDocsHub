@@ -39,7 +39,7 @@ router.post('/register', async (req, res) => {
     // Generate JWT token
     const token = jwt.sign(
       { userId: user.id },
-      process.env.NEXTAUTH_SECRET || 'your-secret-key',
+      process.env.NEXTAUTH_SECRET,
       { expiresIn: '24h' }
     );
 
@@ -47,6 +47,8 @@ router.post('/register', async (req, res) => {
     res.cookie('auth_token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      path: '/',
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
     });
 
@@ -89,7 +91,7 @@ router.post('/login', async (req, res) => {
 
     const token = jwt.sign(
       { userId: user.id },
-      process.env.NEXTAUTH_SECRET || 'your-secret-key',
+      process.env.NEXTAUTH_SECRET,
       { expiresIn: '24h' }
     );
 
@@ -97,7 +99,7 @@ router.post('/login', async (req, res) => {
     res.cookie('auth_token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       path: '/',
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
       domain: 'localhost' 

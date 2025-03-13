@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/app/context/AuthContext';
+import getApiUrl from '@/app/backend/utils/apiConfig';
 
 const RegisterForm = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -11,9 +12,6 @@ const RegisterForm = () => {
   const router = useRouter();
   const { setUser } = useAuth();
   
-
-
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -21,7 +19,7 @@ const RegisterForm = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:3001/api/users/register', {
+      const response = await fetch(`${getApiUrl()}/api/users/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
