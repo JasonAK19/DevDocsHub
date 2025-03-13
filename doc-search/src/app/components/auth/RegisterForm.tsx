@@ -2,12 +2,15 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/app/context/AuthContext';
 
 const RegisterForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({ name: '', email: '', password: '' });
   const [message, setMessage] = useState('');
   const router = useRouter();
+  const { setUser } = useAuth();
+  
 
 
 
@@ -18,18 +21,22 @@ const RegisterForm = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:3001/user', {
+      const response = await fetch('http://localhost:3001/api/users/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include', 
         body: JSON.stringify(formData),
       });
-
+  
       if (response.ok) {
         const data = await response.json();
         setMessage('User registered successfully!');
-      
+        if (data.user) {
+          setUser(data.user); 
+          console.log('User registered:', data.user);
+        }
         router.push('/search/interface');
       } else {
         const errorData = await response.json();
@@ -39,7 +46,6 @@ const RegisterForm = () => {
       setMessage(`Error: ${(error as any).message}`);
     }
   };
-
 
   return (
     <form className="space-y-6" onSubmit={handleSubmit}>
