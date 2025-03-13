@@ -1,11 +1,17 @@
 {
   "version": 2,
+  "buildCommand": "next build",
   "framework": "nextjs",
-  "buildCommand": "npm run vercel-build",
   "builds": [
     {
       "src": "package.json",
       "use": "@vercel/next"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/"
     }
   ],
   "env": {
