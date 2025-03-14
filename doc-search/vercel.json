@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "next build",
+  "buildCommand": "npm run build",
   "framework": "nextjs",
   "builds": [
     {
@@ -16,6 +16,7 @@
   ],
   "env": {
     "NEXTAUTH_URL": "https://dev-docs-hub.vercel.app",
-    "NODE_ENV": "production"
+    "NODE_ENV": "production",
+    "PRISMA_GENERATE_DATAPROXY": "true"
   }
 }
