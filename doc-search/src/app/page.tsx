@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Code, Search, Bookmark, ArrowRight } from 'lucide-react';
+import { Code, Search, Bookmark, ArrowRight } from '@/app/components/ui/Icons';
 
 export default function LandingPage() {
   return (

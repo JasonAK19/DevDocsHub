@@ -18,11 +18,8 @@ export async function GET() {
     cookieDetails: authToken ? {
       name: authToken.name,
       value: 'HIDDEN', // Don't expose the actual token
-      expires: authToken.expires,
-      path: authToken.path,
-      secure: authToken.secure,
-      httpOnly: authToken.httpOnly,
     } : null,
     allCookies,
+    sessionCookies: cookieStore.getAll().map(c => c.name)
   });
 }

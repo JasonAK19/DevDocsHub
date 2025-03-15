@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from 'react';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff } from '@/app/components/ui/Icons'; 
+import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/app/context/AuthContext';
 import getApiUrl from '@/app/backend/utils/apiConfig';

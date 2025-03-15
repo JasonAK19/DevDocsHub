@@ -1,6 +1,7 @@
 "use client";
 import React from 'react';
-import { Code } from 'lucide-react';
+import { Code } from '../ui/Icons';
+import dynamic from 'next/dynamic';
 
 interface AuthLayoutProps {
   children: React.ReactNode;

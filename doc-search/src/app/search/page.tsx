@@ -4,7 +4,21 @@ import ServerError from "../components/ServerError";
 import { Suspense } from "react";
 import { ErrorBoundary } from "../components/ErrorBoundary";
 import { performSearch, refreshSearch } from "../actions/searchActions";
-import { SearchParams, SearchResponse, SearchResult, FormattedSearchResult } from "../types/search";
+
+import { SearchParams, SearchResponse, SearchResult as APISearchResult, FormattedSearchResult } from "../types/search";
+
+// Define the component search result type locally since it's not exported
+interface ComponentSearchResult {
+  id: string;
+  title: string;
+  description: string;
+  content: string;
+  summary: string;
+  url: string;
+  source: string;
+  language: string;
+  lastUpdated: string;
+}
 
 interface SearchPageProps {
   searchParams: { [key: string]: string | string[] | undefined }
@@ -38,7 +52,7 @@ export default async function SearchResultsPage({
     }
 
     // Extract results, handling both response formats
-    let results: SearchResult[] = [];
+    let results: APISearchResult[] = [];
     if (searchResponse.results && Array.isArray(searchResponse.results)) {
       results = searchResponse.results;
     } else if (Array.isArray(searchResponse)) {
@@ -47,24 +61,26 @@ export default async function SearchResultsPage({
       throw new Error('Invalid search results format');
     }
 
-    // Format results
-    const formattedResults: FormattedSearchResult[] = results.map((result: SearchResult) => ({
+    // Format results to match what the component expects
+    const formattedResults: ComponentSearchResult[] = results.map((result: APISearchResult, index: number) => ({
+      id: `result-${index}`,
       title: result.title || 'Untitled',
       description: result.summary || result.content || '',
+      content: result.content || '',
+      summary: result.summary || '',
       url: result.url || '#',
       source: result.source || 'Unknown',
       language: language,
       lastUpdated: new Date().toLocaleDateString()
     }));
 
-    // Return search results component
     return (
       <ErrorBoundary>
         <Suspense fallback={<SearchSkeleton />}>
           <SearchResults 
             query={query}
             results={formattedResults}
-            metadata={searchResponse.metadata}
+            // Remove the metadata prop as it's not expected by the component
           />
         </Suspense>
       </ErrorBoundary>

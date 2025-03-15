@@ -1,9 +1,9 @@
 "use client";
-
+ 
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useRouter } from 'next/navigation';
-import { ExternalLink, Bookmark, Folder, Trash2, ArrowLeft} from 'lucide-react';
+import { ExternalLink, Bookmark, Folder, Trash2, ArrowLeft } from '@/app/components/ui/Icons';
 
 interface BookmarkItem {
   id: string;

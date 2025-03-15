@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { Search, Code, Bookmark, LogOut } from 'lucide-react';
+import { Search, Code, Bookmark, LogOut } from '@/app/components/ui/Icons';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
