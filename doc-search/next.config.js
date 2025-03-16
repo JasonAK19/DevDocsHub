@@ -2,15 +2,18 @@
 const nextConfig = {
     // Enable React strict mode
     reactStrictMode: true,
+    
+    assetPrefix: process.env.NODE_ENV === 'production' 
+    ? 'https://dev-docs-hub.vercel.app' 
+    : undefined,
   
     // Experimental features configuration
     experimental: {
       serverActions: {
         // Allow your production domain when deployed
-        allowedOrigins: process.env.NODE_ENV === 'production' 
-          ? [process.env.NEXTAUTH_URL?.replace(/^https?:\/\//, '') || 'dev-docs-hub.vercel.app'] 
-          : ['localhost:3000']
-      }
+        allowedOrigins: ['localhost:3000', 'dev-docs-hub.vercel.app', '*.vercel.app']
+      },
+      clientRouterFilter: true
     },
     
     // Configure custom build directory
