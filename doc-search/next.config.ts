@@ -16,7 +16,7 @@ const nextConfig: NextConfig = {
      ]
      },
 
-     clientRouterFilters: true
+     clientRouterFilter: true
 
    },
   
