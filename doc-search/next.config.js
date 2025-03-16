@@ -3,10 +3,7 @@ const nextConfig = {
     // Enable React strict mode
     reactStrictMode: true,
     
-    assetPrefix: process.env.NODE_ENV === 'production' 
-    ? 'https://dev-docs-hub.vercel.app' 
-    : undefined,
-  
+    
     // Experimental features configuration
     experimental: {
       serverActions: {
