@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { searchDocuments } from '../../backend/services/searchService';
 import { NextResponse } from 'next/server';
 

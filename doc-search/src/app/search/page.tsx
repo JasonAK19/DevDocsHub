@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import SearchResults from "@/app/components/SearchResults";
 import SearchSkeleton from "../components/loading/SearchSkeleton";
 import ServerError from "../components/ServerError";

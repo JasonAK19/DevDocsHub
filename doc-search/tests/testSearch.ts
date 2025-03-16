@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 const axios = require('axios');
 const dotenv = require('dotenv');
 import { AxiosError } from 'axios';
