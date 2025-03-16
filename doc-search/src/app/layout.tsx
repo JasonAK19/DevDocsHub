@@ -18,6 +18,17 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      {/* Add debug styling here */}
+      <head>
+        <style dangerouslySetInnerHTML={{ __html: `
+          * {
+            outline: 1px solid red !important;
+          }
+          body {
+            background-color: #f0f0f0 !important;
+          }
+        `}} />
+      </head>
       <body className={`${inter.className} antialiased`} >
         <AuthProvider>
         {children}

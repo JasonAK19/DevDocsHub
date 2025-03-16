@@ -3,11 +3,10 @@ const nextConfig = {
     // Enable React strict mode
     reactStrictMode: true,
     
+    // Remove assetPrefix if you had it - it can cause issues when incorrectly configured
     
-    // Experimental features configuration
     experimental: {
       serverActions: {
-        // Allow your production domain when deployed
         allowedOrigins: ['localhost:3000', 'dev-docs-hub.vercel.app', '*.vercel.app']
       },
       clientRouterFilter: true
@@ -18,23 +17,13 @@ const nextConfig = {
     
     // Enable image optimization
     images: {
-      // Add your actual domain(s) here
       domains: ['dev-docs-hub.vercel.app', 'vercel.app'],
+      unoptimized: true 
     },
     
-    // Configure rewrites for API routes
+    // Simplify rewrites - they should match exactly what you need
     async rewrites() {
-      return [
-        // Forward API requests to your Express backend
-        {
-          source: '/api/users/:path*',
-          destination: '/api/users/:path*',
-        },
-        {
-          source: '/api/search/:path*',
-          destination: '/api/search/:path*',
-        }
-      ]
+      return [];  // Remove rewrites that aren't needed or point to same location
     }
   };
   
