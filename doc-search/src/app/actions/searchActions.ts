@@ -14,8 +14,23 @@ export async function performSearch(query: string, language?: string) {
   try {
     console.log('Attempting search with:', { query, language });
     
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-    const response = await fetch(`${baseUrl}/api/search`, {
+    // Get the absolute base URL for server-side requests
+    let baseUrl = '';
+    
+    // Use origin for absolute URL construction in server components
+    if (typeof window === 'undefined') {
+      // Server-side: need to construct an absolute URL
+      baseUrl = process.env.VERCEL_URL 
+        ? `https://${process.env.VERCEL_URL}`
+        : process.env.NEXTAUTH_URL || 'http://localhost:3000';
+    }
+    
+    // Always use an absolute URL in server components
+    const searchUrl = `${baseUrl}/api/search`;
+    
+    console.log('Using search URL:', searchUrl);
+    
+    const response = await fetch(searchUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -28,7 +43,7 @@ export async function performSearch(query: string, language?: string) {
     });
 
     if (!response.ok) {
-      throw new Error(`Search failed with status: ${response.status}`);
+      throw new Error(`Search failed: ${response.statusText} (${response.status})`);
     }
 
     const data = await response.json();

@@ -1,9 +1,6 @@
 import { searchDocuments } from '../../backend/services/searchService';
 import { NextResponse } from 'next/server';
 
-
-const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:3001';
-
 // Common error response helper
 function createErrorResponse(message: string, status: number = 500) {
   return NextResponse.json(
@@ -20,65 +17,118 @@ function createSuccessResponse(data: any) {
   });
 }
 
-
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    
-    if (!body.query) {
-      return createErrorResponse('Search query is required', 400);
-    }
+    const { query, language = 'JavaScript', framework } = body;
 
-    // Forward the request to Express server
-    const response = await fetch(`${API_BASE_URL}/api/search`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      return createErrorResponse(data.error || 'Search failed', response.status);
-    }
-
-    return createSuccessResponse(data.data);
-
-  } catch (error) {
-    console.error('Search API error:', error);
-    return createErrorResponse(
-      error instanceof Error ? error.message : 'Internal server error'
-    );
-  }
-}
-      
-
-export async function GET(request: Request) {
-  try {
-    const url = new URL(request.url);
-    const searchParams = url.searchParams;
-    
-    const query = searchParams.get('q');
     if (!query) {
       return createErrorResponse('Search query is required', 400);
     }
 
-    // Forward the request to Express server
-    const response = await fetch(`${API_BASE_URL}/api/search?${searchParams.toString()}`);
-    const data = await response.json();
+    // Enhance query for React hooks
+    const enhancedQuery = query.toLowerCase().startsWith('use') 
+      ? `React ${query} hook`
+      : query;
 
-    if (!response.ok) {
-      return createErrorResponse(data.error || 'Search failed', response.status);
+    const results = await searchDocuments(enhancedQuery, language, framework);
+    
+    // Check if we have any results, regardless of Elasticsearch status
+    if (results.results && results.results.length > 0) {
+      return createSuccessResponse({
+        ...results,
+        metadata: {
+          ...results.metadata,
+          sources: {
+            ...results.metadata.sources,
+            elasticsearch: false // Explicitly mark Elasticsearch as unavailable
+          }
+        }
+      });
     }
 
-    return createSuccessResponse(data.data);
+    // Handle case where we have no results
+    if (results.metadata?.error) {
+      // Log the Elasticsearch error but don't expose it to the client
+      console.warn('Search backend warning:', results.metadata.error);
+      return createSuccessResponse({
+        total: 0,
+        results: [],
+        metadata: {
+          query: enhancedQuery,
+          language,
+          framework,
+          sources: {
+            elasticsearch: false,
+            github: results.metadata.sources?.github || false,
+            mdn: results.metadata.sources?.mdn || false
+          }
+        }
+      });
+    }
 
+    // Return empty results if nothing found
+    return createSuccessResponse(results);
+
+  } catch (error: any) {
+    console.error('Search error:', error);
+    return createErrorResponse('An unexpected error occurred while searching');
+  }
+}
+      
+export async function GET(request: Request) {
+  const url = new URL(request.url);
+  const query = url.searchParams.get('q');
+  const language = url.searchParams.get('language') || 'JavaScript';
+  const framework = url.searchParams.get('framework') || undefined;
+
+  if (!query) {
+    return createErrorResponse('Search query is required', 400);
+  }
+
+  try {
+    // Enhance query for React hooks
+    const enhancedQuery = query.toLowerCase().startsWith('use') 
+      ? `React ${query} hook`
+      : query;
+
+    const results = await searchDocuments(enhancedQuery, language, framework);
+    
+    // Use the same logic as the POST handler for consistency
+    if (results.results && results.results.length > 0) {
+      return createSuccessResponse({
+        ...results,
+        metadata: {
+          ...results.metadata,
+          sources: {
+            ...results.metadata.sources,
+            elasticsearch: false
+          }
+        }
+      });
+    }
+
+    if (results.metadata?.error) {
+      console.warn('Search backend warning:', results.metadata.error);
+      return createSuccessResponse({
+        total: 0,
+        results: [],
+        metadata: {
+          query: enhancedQuery,
+          language,
+          framework,
+          sources: {
+            elasticsearch: false,
+            github: results.metadata.sources?.github || false,
+            mdn: results.metadata.sources?.mdn || false
+          }
+        }
+      });
+    }
+
+    return createSuccessResponse(results);
   } catch (error) {
-    console.error('Search API error:', error);
-    return createErrorResponse(
-      error instanceof Error ? error.message : 'Internal server error'
-    );
+    console.error('Search error:', error);
+    return createErrorResponse('An unexpected error occurred while searching');
   }
 }

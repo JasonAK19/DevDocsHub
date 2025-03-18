@@ -99,18 +99,15 @@ export default function SearchResults({ query, results, userId: propUserId }: Se
   };
 
   const isBookmarked = (result: SearchResult) => {
-    // 1. Check if result.id exists in bookmarkedItems
     if (bookmarkedItems.has(result.id)) {
       return true;
     }
     
-    // 2. Generate and check a URL-based ID
     const urlId = btoa(result.url);
     if (bookmarkedItems.has(urlId)) {
       return true;
     }
     
-    // 3. Check for other IDs that might have been generated differently
     const combinedId = btoa(`${result.url || ''}${result.title || ''}`);
     if (bookmarkedItems.has(combinedId)) {
       return true;
@@ -166,7 +163,6 @@ export default function SearchResults({ query, results, userId: propUserId }: Se
     
       
       if (response.ok) {
-        // Update local state
         const newBookmarkedItems = new Set(bookmarkedItems);
         if (isCurrentlyBookmarked) {
           newBookmarkedItems.delete(result.id);
@@ -175,7 +171,6 @@ export default function SearchResults({ query, results, userId: propUserId }: Se
         }
         setBookmarkedItems(newBookmarkedItems);
         
-        // Try to parse the response, but don't fail if it's empty
         try {
           const data = await response.json();
           console.log("Bookmark response data:", data);

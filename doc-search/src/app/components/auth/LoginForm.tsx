@@ -18,7 +18,7 @@ const LoginForm = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:3001/api/users/login', {
+      const response = await fetch('/api/users/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -30,7 +30,7 @@ const LoginForm = () => {
       if (response.ok) {
         const data = await response.json();
         setMessage('Login successful!');
-        setUser(data.user); // Set the user state
+        setUser(data.user); 
         router.push('/search/interface');
       } else {
         const errorData = await response.json();
