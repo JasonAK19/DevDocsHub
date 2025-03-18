@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 /*
 export interface SearchResult {
     title: string;

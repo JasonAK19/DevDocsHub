@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useMemo } from 'react';
 import { SearchResult as SearchResultType } from '../types/search';
-import { ExternalLink, Bookmark, ArrowLeft } from 'lucide-react';
+import { ExternalLink, Bookmark, ArrowLeft } from '@/app/components/ui/Icons';
 import { useAuth } from '../context/AuthContext';
 import { useRouter, usePathname } from 'next/navigation';
 

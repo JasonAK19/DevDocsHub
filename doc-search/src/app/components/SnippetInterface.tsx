@@ -1,5 +1,5 @@
 import React from 'react';
-import { Code, Search, Folder, Copy } from 'lucide-react';
+import { Code, Search, Folder, Copy } from '@/app/components/ui/Icons';
 
 const SnippetInterface = () => {
   const snippets = [

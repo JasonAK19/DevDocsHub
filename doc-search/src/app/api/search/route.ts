@@ -1,7 +1,7 @@
+export const dynamic = 'force-dynamic';
 import { searchDocuments } from '../../backend/services/searchService';
 import { NextResponse } from 'next/server';
 
-// Common error response helper
 function createErrorResponse(message: string, status: number = 500) {
   return NextResponse.json(
     { error: message },
@@ -9,7 +9,6 @@ function createErrorResponse(message: string, status: number = 500) {
   );
 }
 
-// Common success response helper
 function createSuccessResponse(data: any) {
   return NextResponse.json({
     success: true,
