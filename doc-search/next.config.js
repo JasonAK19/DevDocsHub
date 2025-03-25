@@ -2,10 +2,11 @@
 const nextConfig = {
   // Enable React strict mode
   reactStrictMode: true,
+  transpilePackages: ['undici', '@elastic/elasticsearch', '@elastic/transport'],
 
   experimental: {
     serverActions: {
-      allowedOrigins: ['localhost:3000']
+      allowedOrigins: ['localhost:3000', 'devdocshub.vercel.app']
     },
   },
  
@@ -17,7 +18,7 @@ const nextConfig = {
   
   // Enable image optimization
   images: {
-    domains: ['your-domain.com'],
+    domains: ['devdocshub.vercel.app'],
   },
   
   // Configure environment variables
@@ -31,8 +32,14 @@ const nextConfig = {
       source: '/api/:path*',
       destination: '/api/:path*',
     }]
+  },
+
+  // Add this to avoid webpack issues with ES modules
+  webpack: (config) => {
+    // Mark certain packages to be handled via client-side
+    config.externals = [...(config.externals || []), "@elastic/elasticsearch"];
+    return config;
   }
 }; 
 
 module.exports = nextConfig;
-
