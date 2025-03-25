@@ -1,11 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
 export async function DELETE(
-  request: NextRequest,
-  context: { params: { id: string } }
+  request: Request,
+  { params }: { params: { id: string } }
 ) {
-  const { id } = context.params;
+  const { id } = params;
 
   if (!id) {
     return NextResponse.json({ error: 'ID is required' }, { status: 400 });
