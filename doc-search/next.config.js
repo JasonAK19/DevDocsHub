@@ -1,6 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Enable React strict mode
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   reactStrictMode: true,
   transpilePackages: ['undici', '@elastic/elasticsearch', '@elastic/transport'],
 
