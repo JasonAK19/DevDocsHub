@@ -5,18 +5,26 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const id = params.id;
-  
+  const { id } = params; 
+
+  if (!id) {
+    return NextResponse.json({ error: 'ID is required' }, { status: 400 });
+  }
+
   try {
     await prisma.bookmark.delete({
       where: {
-        id: id
-      }
+        id: id,
+      },
     });
-    
+
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Failed to delete bookmark:', error);
-    return NextResponse.json({ error: 'Failed to delete bookmark' }, { status: 500 });
+
+    return NextResponse.json(
+      { error: 'Failed to delete bookmark' },
+      { status: 500 }
+    );
   }
 }
