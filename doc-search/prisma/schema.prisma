@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,47 +7,46 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 model User {
-  id            String         @id @default(cuid())
-  email         String         @unique
-  name          String?
-  password      String
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  bookmarks     Bookmark[]
-  searches      Search[]
-  codeSnippets  CodeSnippet[]
-  notes         Note[]
+  id           String        @id @default(cuid())
+  email        String        @unique
+  name         String?
+  password     String
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  bookmarks    Bookmark[]
+  codeSnippets CodeSnippet[]
+  notes        Note[]
+  searches     Search[]
 }
 
 model DocumentationSource {
-  id          String      @id @default(cuid())
-  name        String      // e.g., "React Docs", "MDN"
-  baseUrl     String      // Base URL of the documentation
-  apiEndpoint String?     // If the source has an API
-  type        SourceType  // Official/Community/Other
-  language    String?     // Programming language if applicable
-  framework   String?     // Framework if applicable
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  id          String     @id @default(cuid())
+  name        String
+  baseUrl     String
+  apiEndpoint String?
+  type        SourceType
+  language    String?
+  framework   String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  enabled     Boolean    @default(true)
   pages       DocPage[]
-  enabled     Boolean     @default(true)
 
   @@index([name])
 }
 
 model DocPage {
-  id          String             @id @default(cuid())
+  id          String              @id @default(cuid())
   url         String
   title       String
-  content     String             @db.Text
+  content     String
   sourceId    String
-  source      DocumentationSource @relation(fields: [sourceId], references: [id])
-  createdAt   DateTime           @default(now())
-  updatedAt   DateTime           @updatedAt
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
   bookmarks   Bookmark[]
   snippets    CodeSnippet[]
+  source      DocumentationSource @relation(fields: [sourceId], references: [id])
   searchIndex SearchIndex?
 
   @@index([url])
@@ -63,11 +56,11 @@ model DocPage {
 model SearchIndex {
   id        String   @id @default(cuid())
   pageId    String   @unique
-  page      DocPage  @relation(fields: [pageId], references: [id])
-  keywords  String[] // Array of keywords for better search
-  content   String   @db.Text // Processed content for search
-  metadata  Json     // Additional metadata for search
+  keywords  String[]
+  content   String
+  metadata  Json
   updatedAt DateTime @updatedAt
+  page      DocPage  @relation(fields: [pageId], references: [id])
 
   @@index([keywords])
 }
@@ -76,9 +69,9 @@ model Search {
   id        String   @id @default(cuid())
   query     String
   userId    String
-  user      User     @relation(fields: [userId], references: [id])
   timestamp DateTime @default(now())
-  results   Json     // Store search results for history
+  results   Json
+  user      User     @relation(fields: [userId], references: [id])
 
   @@index([userId])
   @@index([query])
@@ -87,11 +80,11 @@ model Search {
 model Bookmark {
   id        String   @id @default(cuid())
   userId    String
-  user      User     @relation(fields: [userId], references: [id])
   pageId    String
-  page      DocPage  @relation(fields: [pageId], references: [id])
-  folder    String?  // Optional folder organization
+  folder    String?
   createdAt DateTime @default(now())
+  page      DocPage  @relation(fields: [pageId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
   notes     Note[]
 
   @@unique([userId, pageId])
@@ -102,16 +95,16 @@ model Bookmark {
 model CodeSnippet {
   id          String   @id @default(cuid())
   title       String
-  code        String   @db.Text
+  code        String
   language    String
   userId      String
-  user        User     @relation(fields: [userId], references: [id])
   pageId      String?
-  page        DocPage? @relation(fields: [pageId], references: [id])
   description String?
   tags        String[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  page        DocPage? @relation(fields: [pageId], references: [id])
+  user        User     @relation(fields: [userId], references: [id])
 
   @@index([userId])
   @@index([language])
@@ -120,13 +113,13 @@ model CodeSnippet {
 
 model Note {
   id         String   @id @default(cuid())
-  content    String   @db.Text
+  content    String
   userId     String
-  user       User     @relation(fields: [userId], references: [id])
   bookmarkId String
-  bookmark   Bookmark @relation(fields: [bookmarkId], references: [id])
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+  bookmark   Bookmark @relation(fields: [bookmarkId], references: [id])
+  user       User     @relation(fields: [userId], references: [id])
 
   @@index([userId])
   @@index([bookmarkId])

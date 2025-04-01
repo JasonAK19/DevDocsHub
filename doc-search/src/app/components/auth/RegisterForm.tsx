@@ -37,7 +37,8 @@ const RegisterForm = () => {
         router.push('/search/interface');
       } else {
         const errorData = await response.json();
-        console.error('Registration failed:', errorData); // Log the full error response
+        console.error('Registration failed:', errorData);
+        console.log('DATABASE_URL:', process.env.DATABASE_URL); // Log the full error response
         setMessage(`Error: ${errorData.error || 'An unknown error occurred'}`);
       }
     } catch (error) {
