@@ -10,9 +10,6 @@ const RegisterForm = () => {
   const [message, setMessage] = useState('');
   const router = useRouter();
   const { setUser } = useAuth();
-  
-
-
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -40,9 +37,11 @@ const RegisterForm = () => {
         router.push('/search/interface');
       } else {
         const errorData = await response.json();
-        setMessage(`Error: ${errorData.error}`);
+        console.error('Registration failed:', errorData); // Log the full error response
+        setMessage(`Error: ${errorData.error || 'An unknown error occurred'}`);
       }
     } catch (error) {
+      console.error('Unexpected error:', error); // Log unexpected errors
       setMessage(`Error: ${(error as any).message}`);
     }
   };
