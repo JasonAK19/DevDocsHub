@@ -150,7 +150,7 @@ async function checkElasticsearchStatus(): Promise<ElasticsearchStatus> {
       status: 'unavailable',
     };
   }
-  
+
   try {
     const health = await esClient.cluster.health();
     return {
@@ -192,6 +192,11 @@ async function formatSearchResults(combinedResults: CombinedResults): Promise<Se
 }
 
 async function indexExternalResults(results: CombinedResults): Promise<void> {
+  if (!esClient) {
+    console.warn('Elasticsearch client is not initialized. Skipping indexing.');
+    return;
+  }
+
   try {
     const bulkBody = Object.entries(results).flatMap(([source, docs]) => {
       if (!docs) return [];
