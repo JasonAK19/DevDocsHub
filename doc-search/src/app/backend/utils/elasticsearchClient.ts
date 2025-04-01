@@ -3,7 +3,7 @@ import type { ClientOptions } from '@elastic/elasticsearch';
 
 
 const clientConfig: ClientOptions = {
-  node: process.env.ELASTICSEARCH_NODE || 'http://localhost:9200',
+  node: process.env.ELASTICSEARCH_NODE || 'http://localhost:9200' || 'placeholder',
 };
 
 
@@ -27,5 +27,4 @@ const esClient = getElasticsearchClient();
 
 export default esClient;
 
-// Also export as a named function for testing or re-initialization purposes
 export { getElasticsearchClient };
