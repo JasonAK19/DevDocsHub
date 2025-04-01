@@ -23,6 +23,7 @@ export interface SearchResponse {
 }
 
 export interface SearchResult {
+  id: string;
   title: string;
   summary?: string;
   content?: string;
@@ -31,6 +32,7 @@ export interface SearchResult {
 }
 
 export interface FormattedSearchResult {
+  id: string;
   title: string;
   description: string;
   url: string;

@@ -4,57 +4,58 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 const prisma = new PrismaClient();
 export async function GET(request: NextRequest) {
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
-    const includePages = searchParams.get('includePages') === 'true';
+  const { searchParams } = new URL(request.url);
+  const userId = searchParams.get('userId');
+  const includePages = searchParams.get('includePages') === 'true';
+  
+  if (!userId) {
+    return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
+  }
+  
+  try {
+    // Use a more type-safe approach to handle the conditional query
+    let bookmarks;
     
-    if (!userId) {
-      return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
-    }
-    
-    try {
-      // Fix the Prisma query
-      const bookmarks = await prisma.bookmark.findMany({
-        where: {
-          userId: userId
-        },
-      
-        ...(includePages ? {
-          include: {
-            page: {
-              select: {
-                id: true,
-                url: true,
-                title: true
-              }
+    if (includePages) {
+      bookmarks = await prisma.bookmark.findMany({
+        where: { userId: userId },
+        include: {
+          page: {
+            select: {
+              id: true,
+              url: true,
+              title: true
             }
           }
-        } : {
-          select: {
-            id: true,
-            userId: true,
-            pageId: true,
-            createdAt: true
-          }
-        })
+        }
       });
-      
-      return NextResponse.json(bookmarks);
-    } catch (error) {
-      console.error('Failed to fetch bookmarks:', error);
-      
-      // Fix error handling
-      let errorMessage = 'Unknown error';
-      if (error instanceof Error) {
-        errorMessage = error.message;
-      }
-      
-      return NextResponse.json({ 
-        error: 'Failed to fetch bookmarks', 
-        details: errorMessage
-      }, { status: 500 });
+    } else {
+      bookmarks = await prisma.bookmark.findMany({
+        where: { userId: userId },
+        select: {
+          id: true,
+          userId: true,
+          pageId: true,
+          createdAt: true
+        }
+      });
     }
+    
+    return NextResponse.json(bookmarks);
+  } catch (error) {
+    console.error('Failed to fetch bookmarks:', error);
+    
+    let errorMessage = 'Unknown error';
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    }
+    
+    return NextResponse.json({ 
+      error: 'Failed to fetch bookmarks', 
+      details: errorMessage 
+    }, { status: 500 });
   }
+}
 
 export async function POST(request: NextRequest) {
     try {

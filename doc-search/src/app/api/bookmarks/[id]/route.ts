@@ -3,9 +3,10 @@ import prisma from '@/lib/prisma';
 
 export async function DELETE(
   request: NextRequest,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
-  const { id } = context.params;
+  const params = await context.params;
+  const { id } = params;
 
   if (!id) {
     return NextResponse.json({ error: 'ID is required' }, { status: 400 });

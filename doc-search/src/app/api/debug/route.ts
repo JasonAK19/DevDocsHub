@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 
 export async function GET() {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const authToken = cookieStore.get('auth_token');
   
   // Get all cookie names
@@ -17,11 +17,7 @@ export async function GET() {
     authTokenExists: !!authToken,
     cookieDetails: authToken ? {
       name: authToken.name,
-      value: 'HIDDEN', // Don't expose the actual token
-      expires: authToken.expires,
-      path: authToken.path,
-      secure: authToken.secure,
-      httpOnly: authToken.httpOnly,
+      value: 'HIDDEN', 
     } : null,
     allCookies,
   });

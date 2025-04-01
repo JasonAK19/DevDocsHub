@@ -8,14 +8,23 @@ const nextConfig = {
   transpilePackages: ['undici', '@elastic/elasticsearch', '@elastic/transport'],
 
   experimental: {
+    // Proper configuration for Server Actions
     serverActions: {
       allowedOrigins: ['localhost:3000', 'devdocshub.vercel.app']
     },
+    // Add proper Turbo configuration
+    turbo: {
+      resolveAlias: {
+        // Ensure @elastic/elasticsearch is properly handled in both modes
+        "@elastic/elasticsearch": "@elastic/elasticsearch"
+      },
+      // Ensure external packages are properly handled
+      rules: {
+        // Add any specific rules for problematic modules
+      }
+    }
   },
  
-  // Configure base path if app isn't hosted at root
-  // basePath: '/docs',
-  
   // Configure custom build directory
   distDir: '.next',
   
@@ -37,10 +46,21 @@ const nextConfig = {
     }]
   },
 
-  // Add this to avoid webpack issues with ES modules
-  webpack: (config) => {
+  // Webpack configuration for production builds
+  webpack: (config, { isServer, dev }) => {
     // Mark certain packages to be handled via client-side
     config.externals = [...(config.externals || []), "@elastic/elasticsearch"];
+    
+    // Improve compatibility with problematic packages
+    if (!isServer && !dev) {
+      // Only apply to client-side production builds
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        path: false,
+      };
+    }
+    
     return config;
   }
 }; 

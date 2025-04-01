@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'; 
+
 import SearchResults from "@/app/components/SearchResults";
 import SearchSkeleton from "../components/loading/SearchSkeleton";
 import ServerError from "../components/ServerError";
@@ -6,16 +8,17 @@ import { ErrorBoundary } from "../components/ErrorBoundary";
 import { performSearch, refreshSearch } from "../actions/searchActions";
 import { SearchParams, SearchResponse, SearchResult, FormattedSearchResult } from "../types/search";
 
+
 interface SearchPageProps {
-  searchParams: { [key: string]: string | string[] | undefined }
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 export default async function SearchResultsPage({
   searchParams,
 }: SearchPageProps) {
   try {
-    // Wait for searchParams to be ready
-    const params = await Promise.resolve(searchParams);
+    // Await the search params promise
+    const params = await searchParams;
     const query = params?.q?.toString() || '';
     const language = params?.language?.toString() || 'JavaScript';
 
@@ -49,6 +52,7 @@ export default async function SearchResultsPage({
 
     // Format results
     const formattedResults: FormattedSearchResult[] = results.map((result: SearchResult) => ({
+      id: result.id || 'unknown',
       title: result.title || 'Untitled',
       description: result.summary || result.content || '',
       url: result.url || '#',
@@ -64,7 +68,7 @@ export default async function SearchResultsPage({
           <SearchResults 
             query={query}
             results={formattedResults}
-            metadata={searchResponse.metadata}
+            //metadata={searchResponse.metadata}
           />
         </Suspense>
       </ErrorBoundary>
