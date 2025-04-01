@@ -3,8 +3,8 @@ import type { ClientOptions } from '@elastic/elasticsearch';
 
 const node = process.env.ELASTICSEARCH_NODE;
 
-if (!node) {
-  console.warn('ELASTICSEARCH_NODE is not set. Elasticsearch client will not be initialized.');
+if (!node || node === 'placeholder') {
+  console.warn('ELASTICSEARCH_NODE is not set or is set to "placeholder". Elasticsearch client will not be initialized.');
 }
 
 const clientConfig: ClientOptions = {
@@ -14,8 +14,8 @@ const clientConfig: ClientOptions = {
 let clientInstance: Client | null = null;
 
 function getElasticsearchClient(): Client {
-  if (!node) {
-    throw new Error('Elasticsearch client cannot be initialized because ELASTICSEARCH_NODE is not configured.');
+  if (!node || node === 'placeholder') {
+    throw new Error('Elasticsearch client cannot be initialized because ELASTICSEARCH_NODE is not properly configured.');
   }
 
   if (!clientInstance) {
@@ -30,7 +30,8 @@ function getElasticsearchClient(): Client {
   return clientInstance;
 }
 
-const esClient = node ? getElasticsearchClient() : null;
+const esClient = node && node !== 'placeholder' ? getElasticsearchClient() : null;
 
 export default esClient;
+
 export { getElasticsearchClient };
