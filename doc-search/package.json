@@ -6,6 +6,7 @@
     "dev": "next dev --turbo",
     "build": "next build --no-lint",
     "build:memory": "cross-env NODE_OPTIONS=\"--max-old-space-size=4096\" next build --no-lint",
+    "postinstall": "prisma generate",
     "start": "next start",
     "lint": "next lint",
     "test": "jest"
