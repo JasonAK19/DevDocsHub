@@ -143,6 +143,14 @@ async function fetchMDNDocs(query: string): Promise<MDNResult[]> {
 }
 
 async function checkElasticsearchStatus(): Promise<ElasticsearchStatus> {
+  if (!esClient) {
+    console.warn('Elasticsearch client is not initialized. Skipping status check.');
+    return {
+      isRunning: false,
+      status: 'unavailable',
+    };
+  }
+  
   try {
     const health = await esClient.cluster.health();
     return {
