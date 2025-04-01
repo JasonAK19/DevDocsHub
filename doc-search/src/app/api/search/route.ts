@@ -41,7 +41,7 @@ export async function POST(request: Request) {
           ...results.metadata,
           sources: {
             ...results.metadata.sources,
-            elasticsearch: false // Explicitly mark Elasticsearch as unavailable
+            elasticsearch: false
           }
         }
       });
@@ -49,7 +49,6 @@ export async function POST(request: Request) {
 
     // Handle case where we have no results
     if (results.metadata?.error) {
-      // Log the Elasticsearch error but don't expose it to the client
       console.warn('Search backend warning:', results.metadata.error);
       return createSuccessResponse({
         total: 0,
